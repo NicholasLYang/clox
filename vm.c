@@ -29,7 +29,7 @@ void initVM() {
 }
 
 void freeVM() {
-  
+
 }
 
 void push(Value value) {
@@ -44,6 +44,10 @@ Value pop() {
 
 static Value peek(int distance) {
   return vm.stackTop[-1 - distance];
+}
+
+static bool isFalsey(Value value) {
+  return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
 }
 
 static InterpretResult run() {
@@ -65,9 +69,9 @@ static InterpretResult run() {
     #ifdef DEBUG_TRACE_EXECUTION
       printf("          ");
       for (Value* slot = vm.stack; slot < vm.stackTop; slot++) {
-        printf("[ ");
-        printValue(*slot);
-        printf(" ]");
+	printf("[ ");
+	printValue(*slot);
+	printf(" ]");
       }
       printf("\n");
       disassembleInstruction(vm.chunk, (int)(vm.ip - vm.chunk->code));
@@ -82,10 +86,21 @@ static InterpretResult run() {
     case OP_NIL:	push(NIL_VAL);		break;
     case OP_TRUE:	push(BOOL_VAL(true));	break;
     case OP_FALSE:	push(BOOL_VAL(false));	break;
+    case OP_EQUAL: {
+      Value b = pop();
+      Value a = pop();
+      push(BOOL_VAL(valuesEqual(a, b)));
+      break;
+    }
+    case OP_GREATER:    BINARY_OP(BOOL_VAL, >); break;
+    case OP_LESS:       BINARY_OP(BOOL_VAL, <); break;
     case OP_ADD:        BINARY_OP(NUMBER_VAL, +); break;
     case OP_SUBTRACT:   BINARY_OP(NUMBER_VAL, -); break;
     case OP_MULTIPLY:   BINARY_OP(NUMBER_VAL, *); break;
     case OP_DIVIDE:     BINARY_OP(NUMBER_VAL, /); break;
+    case OP_NOT:
+      push(BOOL_VAL(isFalsey(pop())));
+      break;
     case OP_NEGATE:
 	if (!IS_NUMBER(peek(0))) {
 	  runtimeError("Operand must be a number.");
@@ -97,7 +112,7 @@ static InterpretResult run() {
       case OP_RETURN: {
 	printValue(pop());
 	printf("\n");
-        return INTERPRET_OK;
+	return INTERPRET_OK;
       }
     }
   }
@@ -123,4 +138,3 @@ InterpretResult interpret(const char* source) {
   freeChunk(&chunk);
   return result;
 }
-

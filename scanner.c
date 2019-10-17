@@ -21,8 +21,8 @@ void initScanner(const char* source) {
 
 static bool isAlpha(char c) {
   return (c >= 'a' && c <= 'z') ||
-         (c >= 'A' && c <= 'Z') ||
-         c == '_';
+	 (c >= 'A' && c <= 'Z') ||
+	 c == '_';
 }
 
 static bool isDigit(char c) {
@@ -82,8 +82,8 @@ static void skipWhitespace() {
       case ' ':
       case '\r':
       case '\t':
-        advance();
-        break;
+	advance();
+	break;
       case '\n':
 	scanner.line++;
 	advance();
@@ -97,7 +97,7 @@ static void skipWhitespace() {
 	}
 	break;
       default:
-        return;
+	return;
     }
   }
 }
@@ -105,7 +105,7 @@ static void skipWhitespace() {
 static TokenType checkKeyword(int start, int length,
 			      const char* rest, TokenType type) {
   if (scanner.current - scanner.start == start + length &&
-      memcmp(scanner.start + start, rest, length)) {
+      memcmp(scanner.start + start, rest, length) == 0) {
     return type;
   }
 
@@ -119,11 +119,11 @@ static TokenType identifierType() {
     case 'e': return checkKeyword(1, 3, "lse", TOKEN_ELSE);
     case 'f':
       if (scanner.current - scanner.start > 1) {
-        switch (scanner.start[1]) {
-          case 'a': return checkKeyword(2, 3, "lse", TOKEN_FALSE);
-          case 'o': return checkKeyword(2, 1, "r", TOKEN_FOR);
-          case 'u': return checkKeyword(2, 1, "n", TOKEN_FUN);
-        }
+	switch (scanner.start[1]) {
+	  case 'a': return checkKeyword(2, 3, "lse", TOKEN_FALSE);
+	  case 'o': return checkKeyword(2, 1, "r", TOKEN_FOR);
+	  case 'u': return checkKeyword(2, 1, "n", TOKEN_FUN);
+	}
       }
       break;
     case 'i': return checkKeyword(1, 1, "f", TOKEN_IF);
@@ -134,10 +134,11 @@ static TokenType identifierType() {
     case 's': return checkKeyword(1, 4, "uper", TOKEN_SUPER);
     case 't':
       if (scanner.current - scanner.start > 1) {
-        switch (scanner.start[1]) {
-          case 'h': return checkKeyword(2, 2, "is", TOKEN_THIS);
-          case 'r': return checkKeyword(2, 2, "ue", TOKEN_TRUE);
-        }
+	switch (scanner.start[1]) {
+	  case 'h': return checkKeyword(2, 2, "is", TOKEN_THIS);
+	  case 'r':
+	    return checkKeyword(2, 2, "ue", TOKEN_TRUE);
+	}
       }
       break;
     case 'v': return checkKeyword(1, 2, "var", TOKEN_VAR);
@@ -190,7 +191,7 @@ Token scanToken() {
   if (isAlpha(c)) return identifier();
   if (isDigit(c)) return number();
 
-  
+
   switch (c) {
     case '(': return makeToken(TOKEN_LEFT_PAREN);
     case ')': return makeToken(TOKEN_RIGHT_PAREN);
@@ -216,5 +217,5 @@ Token scanToken() {
 
   return errorToken("Unexpected character.");
 
-  
+
 }
